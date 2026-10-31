@@ -38,34 +38,19 @@ def main():
                 }
               }
             }],
-        tool_calls = [
-            {
-                "choices": [
-                    {
-                        "index": 0,
-                        "message": {
-                            "role": "assistant",
-                            "content": None,
-                            "tool_calls": [
-                                {
-                                    "id": "call_abc123",
-                                    "type": "function",
-                                    "function": {
-                                        "name": "Read",
-                                        "arguments": "{\"file_path\": \"/path/to/file.txt\"}"
-                                    }
-                                }
-                            ]
-                        },
-                        "finish_reason": "tool_calls"
-                    }
-                ]
-            }
-        ]
 
     )
     if not chat.choices or len(chat.choices) == 0:
         raise RuntimeError("no choices in response")
+    message = chat.choices[0].message
+
+    # Kiểm tra xem LLM có yêu cầu gọi công cụ (tool_calls) hay không
+    if message.tool_calls:
+        for tool_call in message.tool_calls:
+            print(f"Tool call: {tool_call.function.name}")
+            print(f"Arguments: {tool_call.function.arguments}")
+    elif message.content:
+        print(message.content)
 
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!", file=sys.stderr)
