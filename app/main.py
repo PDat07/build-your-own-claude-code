@@ -16,45 +16,78 @@ def main():
 
     if not API_KEY:
         raise RuntimeError("OPENROUTER_API_KEY is not set")
-
+    client=OpenAI(api_key=API_KEY,base_url=BASE_URL)
+    messages = [{"role": "user", "content": args.p}]
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
-
-    chat = client.chat.completions.create(
-        model="anthropic/claude-haiku-4.5",
-        messages=[{"role": "user", "content": args.p}],
-        tools = [{
-              "type": "function",
-              "function": {
-                "name": "Read",
-                "description": "Read and return the contents of a file",
-                "parameters": {
-                  "type": "object",
-                  "properties": {
-                    "file_path": {
-                      "type": "string",
-                      "description": "The path to the file to read"
+    while True :
+        chat = client.chat.completions.create(
+            model="anthropic/claude-haiku-4.5",
+            messages=messages,
+            tools = [{
+                  "type": "function",
+                  "function": {
+                    "name": "Read",
+                    "description": "Read and return the contents of a file",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "file_path": {
+                          "type": "string",
+                          "description": "The path to the file to read"
+                        }
+                      },
+                      "required": ["file_path"]
                     }
-                  },
-                  "required": ["file_path"]
+                  }
+                }],
+
+        )
+
+
+        if not chat.choices or len(chat.choices) == 0:
+            raise RuntimeError("no choices in response")
+
+        if chat.choices[0].message.content:
+            print(chat.choices[0].message.content)
+
+        respon = chat.choices[0].message
+        mes= chat.choices[0].message
+        mes_dict={
+            "role":mes.role,
+            "content": mes.content,
+        }
+        if hasattr(mes,"tool_calls") and mes.tool_calls:
+            mes_dict["tool_calls"]=[
+                {
+                    "id":tc.id,
+                    "type":tc.type,
+                    "function":{
+                        "name": tc.function.name,
+                        "arguments":tc.function.arguments,
+                    },
                 }
-              }
-            }],
+                for tc in mes.tool_calls
+            ]
+        messages.append(mes_dict)
+        if not mes_dict.get("tool_calls"):
+            print(respon.content)
+            break
 
-    )
-    if not chat.choices or len(chat.choices) == 0:
-        raise RuntimeError("no choices in response")
+        for tc in mes.tool_calls or []:
+            arg=json.loads(tc.function.arguments)
+            if tc.function.name=="Read":
+                with open(arg["file_path"]) as f:
+                    result=(f.read())
+                    messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tc.id,
+                            "content": result,
+                        }
+                    )
 
-    if chat.choices[0].message.content:
-        print(chat.choices[0].message.content)
 
 
-    mes= chat.choices[0].message
-
-    for tool_call in mes.tool_calls or []:
-        arg=json.loads(tool_call.function.arguments)
-        if tool_call.function.name=="Read":
-            with open(arg["file_path"]) as f:
-                print(f.read())
 
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     #print("Logs from your program will appear here!", file=sys.stderr)
