@@ -42,15 +42,9 @@ def main():
     )
     if not chat.choices or len(chat.choices) == 0:
         raise RuntimeError("no choices in response")
-    message = chat.choices[0].message
 
-    # Kiểm tra xem LLM có yêu cầu gọi công cụ (tool_calls) hay không
-    if message.tool_calls:
-        for tool_call in message.tool_calls:
-            print(f"Tool call: {tool_call.function.name}")
-            print(f"Arguments: {tool_call.function.arguments}")
-    elif message.content:
-        print(message.content)
+    if chat.choices[0].message.content:
+        print(chat.choices[0].message.content)
 
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     #print("Logs from your program will appear here!", file=sys.stderr)
