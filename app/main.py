@@ -73,7 +73,7 @@ def main():
             print(respon.content)
             break
 
-        for tc in respon.tool_calls or []:
+        for tc in respon.tool_calls :
             arg=json.loads(tc.function.arguments)
             if tc.function.name=="Read":
                 with open(arg["file_path"],"r") as f:
