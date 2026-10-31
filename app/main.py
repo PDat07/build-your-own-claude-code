@@ -37,7 +37,32 @@ def main():
                   "required": ["file_path"]
                 }
               }
-            }]
+            }],
+        tool_calls = [
+            {
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "id": "call_abc123",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "Read",
+                                        "arguments": "{\"file_path\": \"/path/to/file.txt\"}"
+                                    }
+                                }
+                            ]
+                        },
+                        "finish_reason": "tool_calls"
+                    }
+                ]
+            }
+        ]
+
     )
     if not chat.choices or len(chat.choices) == 0:
         raise RuntimeError("no choices in response")
