@@ -47,8 +47,6 @@ def main():
         if not chat.choices or len(chat.choices) == 0:
             raise RuntimeError("no choices in response")
 
-        if chat.choices[0].message.content:
-            print(chat.choices[0].message.content)
 
         respon = chat.choices[0].message
         mes= chat.choices[0].message
