@@ -52,7 +52,7 @@ def main():
 
     for tool_call in mes.tool_calls:
         arg=json.loads(tool_call.function.arguments)
-        if arg.function.name=="Read":
+        if tool_call.function.name=="Read":
             with open(arg["file_path"]) as f:
                 print(f.read())
 
