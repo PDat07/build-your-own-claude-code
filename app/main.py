@@ -50,7 +50,7 @@ def main():
 
     mes= chat.choices[0].message
 
-    for tool_call in mes.tool_calls:
+    for tool_call in mes.tool_calls or []:
         arg=json.loads(tool_call.function.arguments)
         if tool_call.function.name=="Read":
             with open(arg["file_path"]) as f:
